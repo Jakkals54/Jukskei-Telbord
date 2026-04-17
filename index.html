@@ -2,211 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jukskei Scoreboard Pro</title>
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --panel-bg: #1e293b;
-            --accent-blue: #3b82f6;
-            --accent-green: #16a34a;
-            --accent-yellow: #facc15;
-            --border: #334155;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jukskei Scoreboard</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
 
+    <style>
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-dark);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
             color: white;
             text-align: center;
             margin: 0;
             padding: 10px;
-            overflow: hidden; /* Prevents the whole page from bouncing on mobile */
         }
+        .container { max-width: 950px; margin: auto; }
+        
+        #scoreDisplay { font-size: 28px; margin: 15px 0; font-weight: bold; }
+        .editable-name { border-bottom: 2px dashed #3b82f6; padding: 2px 5px; cursor: text; color: #60a5fa; }
 
-        .container { 
-            max-width: 950px; 
-            margin: auto; 
-            display: flex; 
-            flex-direction: column; 
-            height: 98vh; /* Use almost full viewport height */
+        .timer-box { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #334155; }
+        #timerDisplay { font-size: 55px; font-family: monospace; color: #f8fafc; margin: 5px 0; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 3px; background: #0f172a; margin-top: 10px; }
+        th { background: #334155; padding: 12px 2px; font-size: 13px; text-transform: uppercase; color: #cbd5e1; }
+        td { background: #1e293b; height: 38px; border-radius: 4px; }
+        
+        /* High-Visibility Progress Bar */
+        .score-block {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; font-weight: bold; font-size: 14px; color: rgba(255,255,255,0.15);
         }
-        
-        /* TOP SECTION (FIXED) */
-        .fixed-top {
-            flex-shrink: 0;
-        }
+        .active-A { background: #16a34a !important; color: white !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); border: 1px solid #4ade80; }
+        .active-B { background: #2563eb !important; color: white !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); border: 1px solid #60a5fa; }
 
-        #scoreDisplay { font-size: 24px; margin: 10px 0; font-weight: bold; }
-        .editable-name { border-bottom: 2px dashed var(--accent-blue); padding: 2px 5px; color: #60a5fa; }
-
-        .timer-box { background: var(--panel-bg); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
-        #timerDisplay { font-size: 48px; font-family: 'Courier New', monospace; color: #f8fafc; margin: 5px 0; font-weight: bold; }
-        
-        /* BUTTONS */
-        .btn-main { padding: 12px 15px; font-size: 16px; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
-        .btn-start { background: var(--accent-green); min-width: 140px; }
-        .btn-pause { background: #ef4444; min-width: 140px; }
-        .btn-continue { background: var(--accent-yellow); color: #000; min-width: 140px; }
-        .btn-reset { background: #64748b; margin-left: 5px; }
-        
-        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
-        .big-btn { font-size: 32px; width: 80px; height: 60px; background: #22c55e; border: none; border-radius: 12px; color: white; box-shadow: 0 4px 0 #16a34a; cursor: pointer; }
-        .small-btn { font-size: 18px; width: 40px; height: 50px; background: #ef4444; border: none; border-radius: 10px; color: white; box-shadow: 0 4px 0 #b91c1c; cursor: pointer; }
-        .pen-display { font-size: 38px; font-weight: bold; color: var(--accent-yellow); min-width: 45px; }
-        input[type="number"] { width: 65px; padding: 10px; background: var(--bg-dark); color: white; border: 2px solid var(--border); border-radius: 8px; font-size: 18px; text-align: center; font-weight: bold; }
-
-        /* MIDDLE SECTION (SCROLLABLE) */
-        .table-container {
-            flex-grow: 1; /* Takes up all remaining space */
-            overflow-y: auto;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            background: var(--bg-dark);
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iPhones */
-        }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0px 4px; }
-        thead th { 
-            background: #334155; 
-            padding: 10px 2px; 
-            font-size: 12px; 
-            position: sticky; 
-            top: 0; 
-            z-index: 20; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        td { background: var(--panel-bg); height: 48px; }
-        
-        .col-track { width: 120px; }
-        .col-spacer { width: 25px; background: transparent !important; }
-        
-        .score-block { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255,255,255,0.05); }
-        .active-A { background: var(--accent-green) !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #4ade80; }
-        .active-B { background: #2563eb !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #60a5fa; }
-
-        /* CHECKBOXES */
+        /* Brighter Checkboxes */
         input[type="checkbox"] { 
-            appearance: none; -webkit-appearance: none; width: 24px; height: 24px;
-            background-color: #334155; border: 2px solid #475569; border-radius: 4px;
-            display: inline-grid; place-content: center; transform: scale(1.2);
+            transform: scale(2.2); 
+            cursor: default;
+            accent-color: #facc15; /* Bright Yellow for checked state */
+            filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
         }
-        input[type="checkbox"]:checked { background-color: var(--accent-yellow); border-color: #fef08a; }
-        input[type="checkbox"]::before { content: ""; width: 14px; height: 14px; transform: scale(0); box-shadow: inset 1em 1em var(--bg-dark); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
-        input[type="checkbox"]:checked::before { transform: scale(1); }
+
+        /* Buttons */
+        .big-btn { font-size: 35px; padding: 10px 40px; background: #22c55e; border: none; border-radius: 12px; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #16a34a; }
+        .big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #16a34a; }
+        
+        .small-btn { font-size: 18px; padding: 10px 20px; background: #ef4444; border: none; border-radius: 10px; color: white; cursor: pointer; box-shadow: 0 4px 0 #b91c1c; }
+        .small-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b91c1c; }
+
+        .add-round { padding: 15px; font-size: 18px; background: #3b82f6; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; }
+        .new-game-btn { background: #6366f1; width: 100%; margin: 10px 0; border: 2px solid rgba(255,255,255,0.3); }
+        
+        .controls-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; gap: 10px; }
+        .pen-display { font-size: 45px; font-weight: bold; min-width: 60px; color: #facc15; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        
+        input[type="number"] { width: 75px; padding: 12px; background: #0f172a; color: white; border: 2px solid #334155; border-radius: 8px; font-size: 20px; font-weight: bold; text-align: center; }
+        select { background: #0f172a; color: white; padding: 8px; border-radius: 6px; border: 1px solid #475569; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="fixed-top">
-        <h2 id="scoreDisplay">
-            <span id="teamAName" contenteditable="true" class="editable-name">Kranspoort</span>: <span id="valA">0</span> | 
-            <span id="teamBName" contenteditable="true" class="editable-name">Opponente</span>: <span id="valB">0</span>
-        </h2>
+    <h2 id="scoreDisplay">
+        <span id="teamAName" class="editable-name" contenteditable="true">Kranspoort</span>: <span id="valA">0</span> | 
+        <span id="teamBName" class="editable-name" contenteditable="true">Opponente</span>: <span id="valB">0</span>
+    </h2>
 
-        <div class="timer-box">
-            <div style="margin-bottom: 8px;">
-                <select id="gameTime" style="background:var(--bg-dark); color:white; padding:8px; border-radius:8px;">
-                    <option value="20">20</option><option value="25">25</option><option value="30" selected>30</option>
-                    <option value="35">35</option><option value="40">40</option><option value="45">45</option>
-                    <option value="50">50</option><option value="55">55</option><option value="60">60</option>
-                </select>
-                <button id="timerToggle" class="btn-main btn-start" onclick="toggleTimer()"><span>▶</span> Begin Tyd</button>
-                <button class="btn-main btn-reset" onclick="resetTimer()"><span>↺</span> Herstel</button>
-            </div>
-            <h1 id="timerDisplay">00:00</h1>
+    <div class="timer-box">
+        <select id="gameTime">
+            <option value="20">20</option><option value="25">25</option>
+            <option value="30" selected>30</option><option value="35">35</option>
+            <option value="40">40</option><option value="45">45</option>
+            <option value="50">50</option><option value="55">55</option>
+            <option value="60">60</option>
+        </select>
+        <button class="add-round" style="padding:8px 15px; background:#16a34a;" onclick="startTimer()">Start</button>
+        <button class="add-round" style="padding:8px 15px; background:#64748b;" onclick="pauseTimer()">Pause</button>
+        <h1 id="timerDisplay">00:00</h1>
+    </div>
+
+    <button class="add-round new-game-btn" onclick="fullReset()">Nuwe Wedstryd (Total Reset)</button>
+
+    <div class="controls-row">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="big-btn" onclick="addPen('A')">+1</button>
+            <button class="small-btn" onclick="removePen('A')">-1</button>
+            <span id="penA" class="pen-display">0</span>
         </div>
-
-        <button class="btn-main" style="background:#6366f1; width:100%; margin-bottom:8px;" onclick="fullReset()">Nuwe Wedstryd - Alles word uitgeveë</button>
-
-        <div class="controls-row">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <button class="big-btn" onclick="addPen('A')">+</button>
-                <button class="small-btn" onclick="removePen('A')">-</button>
-                <span id="penA" class="pen-display">0</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span id="penB" class="pen-display">0</span>
-                <button class="big-btn" onclick="addPen('B')">+</button>
-                <button class="small-btn" onclick="removePen('B')">-</button>
-            </div>
-        </div>
-
-        <div class="controls-row">
-            <input type="number" id="leA" placeholder="Lê">
-            <button class="btn-main" style="flex-grow:1; background:#2563eb; height:50px;" onclick="addRound()">Eindig Rondte</button>
-            <input type="number" id="leB" placeholder="Lê">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span id="penB" class="pen-display">0</span>
+            <button class="big-btn" onclick="addPen('B')">+1</button>
+            <button class="small-btn" onclick="removePen('B')">-1</button>
         </div>
     </div>
 
-    <div class="table-container" id="scrollWindow">
-        <table id="scoreTable">
-            <thead>
-                <tr>
-                    <th style="width:40px;">P</th><th style="width:40px;">✓</th><th class="col-spacer"></th>
-                    <th class="col-track">Team A</th>
-                    <th style="width:40px;">#</th>
-                    <th class="col-track">Team B</th>
-                    <th class="col-spacer"></th><th style="width:40px;">✓</th><th style="width:40px;">P</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div class="controls-row">
+        <input type="number" id="leA" placeholder="Lê">
+        <button class="add-round" style="flex-grow:1; background:#2563eb;" onclick="addRound()">Eindig Rondte</button>
+        <input type="number" id="leB" placeholder="Lê">
     </div>
+
+    <table id="scoreTable">
+        <thead>
+            <tr>
+                <th>Penne</th><th>✓</th><th style="background:transparent; width:5px;"></th>
+                <th>KRANSPOORT</th><th>Telling</th><th>OPPONENTE</th>
+                <th style="background:transparent; width:5px;"></th><th>✓</th><th>Penne</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <script>
-// ================= BUILD TABLE =================
+// ================= TABLE GENERATION =================
 const tbody = document.querySelector("#scoreTable tbody");
 for (let i = 1; i <= 23; i++) {
     const row = document.createElement("tr");
-    row.id = `row-${i}`;
     row.innerHTML = `
-        <td style="font-size:10px; color:#94a3b8;">${i <= 10 ? i : ""}</td>
+        <td style="font-size:12px; color:#94a3b8;">${i <= 10 ? i : ""}</td>
         <td>${i <= 10 ? '<input type="checkbox" disabled>' : ""}</td>
-        <td class="col-spacer"></td>
-        <td id="trackA-${i}" class="col-track"><div class="score-block">${i}</div></td>
-        <td style="background:#334155; font-weight:bold;">${i}</td>
-        <td id="trackB-${i}" class="col-track"><div class="score-block">${i}</div></td>
-        <td class="col-spacer"></td>
+        <td style="background:transparent;"></td>
+        <td id="trackA-${i}"><div class="score-block">${i}</div></td>
+        <td style="background:#334155; font-weight:bold; color:white;">${i}</td>
+        <td id="trackB-${i}"><div class="score-block">${i}</div></td>
+        <td style="background:transparent;"></td>
         <td>${i <= 10 ? '<input type="checkbox" disabled>' : ""}</td>
-        <td style="font-size:10px; color:#94a3b8;">${i <= 10 ? i : ""}</td>
+        <td style="font-size:12px; color:#94a3b8;">${i <= 10 ? i : ""}</td>
     `;
     tbody.appendChild(row);
 }
 
-// ================= APP LOGIC =================
+// ================= LOGIC =================
 let penA = 0, penB = 0, scoreA = 0, scoreB = 0;
 
 function updateScoreDisplay() {
     document.getElementById("valA").innerText = scoreA;
     document.getElementById("valB").innerText = scoreB;
     renderProgress();
-    autoCenterView();
 }
 
 function renderProgress() {
     for (let i = 1; i <= 23; i++) {
-        const bA = document.getElementById(`trackA-${i}`).firstElementChild;
-        i <= scoreA ? bA.classList.add('active-A') : bA.classList.remove('active-A');
-        const bB = document.getElementById(`trackB-${i}`).firstElementChild;
-        i <= scoreB ? bB.classList.add('active-B') : bB.classList.remove('active-B');
+        const blockA = document.getElementById(`trackA-${i}`).firstElementChild;
+        i <= scoreA ? blockA.classList.add('active-A') : blockA.classList.remove('active-A');
+
+        const blockB = document.getElementById(`trackB-${i}`).firstElementChild;
+        i <= scoreB ? blockB.classList.add('active-B') : blockB.classList.remove('active-B');
     }
 }
 
-// SMART CENTERING LOGIC
-function autoCenterView() {
-    if (scoreA === 0 && scoreB === 0) return;
-    
-    // Find the average score to center the view between both teams
-    const average = Math.round((scoreA + scoreB) / 2);
-    // Anchor to the average score, but ensure we don't go below row 4 for better visibility
-    const target = Math.max(average, 4); 
-    
-    const row = document.getElementById(`row-${target}`);
-    if (row) {
-        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+function fullReset() {
+    if (confirm("Nuwe wedstryd? Kranspoort bly, Opponente word nul.")) {
+        scoreA = 0; scoreB = 0;
+        document.getElementById("teamBName").innerText = "Opponente";
+        updateScoreDisplay();
+        resetRoundInputs();
+        resetTimer();
     }
 }
 
@@ -214,27 +167,21 @@ function addRound() {
     let leA = parseInt(document.getElementById("leA").value) || 0;
     let leB = parseInt(document.getElementById("leB").value) || 0;
     let diff = Math.abs(penA - penB);
-    let penPts = diff * 3;
+    let penPoints = diff * 3;
+    let roundA = 0, roundB = 0;
+
+    if (penA > penB) {
+        roundA += penPoints;
+        if (leA > leB) roundA += leA; else roundB += leB;
+    } else if (penB > penA) {
+        roundB += penPoints;
+        if (leB > leA) roundB += leB; else roundA += leA;
+    }
     
-    if (penA > penB) scoreA += penPts;
-    else if (penB > penA) scoreB += penPts;
-
-    if (leA > leB) scoreA += leA;
-    else if (leB > leA) scoreB += leB;
-
+    scoreA += roundA; scoreB += roundB;
     if (scoreA > 23) scoreA = 23; if (scoreB > 23) scoreB = 23;
     updateScoreDisplay();
     resetRoundInputs();
-}
-
-function fullReset() {
-    if (confirm("Begin nuwe wedstryd? Kranspoort bly.")) {
-        scoreA = 0; scoreB = 0;
-        document.getElementById("teamBName").innerText = "Opponente";
-        updateScoreDisplay();
-        resetRoundInputs();
-        document.getElementById("scrollWindow").scrollTo({ top: 0, behavior: 'smooth' });
-    }
 }
 
 function resetRoundInputs() {
@@ -243,70 +190,48 @@ function resetRoundInputs() {
     document.getElementById("penB").innerText = 0;
     document.getElementById("leA").value = "";
     document.getElementById("leB").value = "";
-    document.querySelectorAll("#scoreTable input[type='checkbox']").forEach(c => c.checked = false);
+    document.querySelectorAll("#scoreTable input[type='checkbox']").forEach(cb => cb.checked = false);
 }
 
-// ================= TIMER LOGIC =================
-let countdown, totalSeconds = 0, timerState = "stopped";
-
-function toggleTimer() {
-    const btn = document.getElementById("timerToggle");
-    if (timerState === "stopped" || timerState === "paused") {
-        if (timerState === "stopped") totalSeconds = parseInt(document.getElementById("gameTime").value) * 60;
-        timerState = "running";
-        btn.innerHTML = "<span>⏸</span> Pouseer";
-        btn.className = "btn-main btn-pause";
-        runTimer();
-    } else {
-        timerState = "paused";
-        clearInterval(countdown);
-        btn.innerHTML = "<span>▶</span> Gaan Voort";
-        btn.className = "btn-main btn-continue";
+function addPen(team) {
+    const rows = document.querySelectorAll("#scoreTable tbody tr");
+    if (team === 'A' && penA < 10) {
+        rows[penA].children[1].querySelector("input").checked = true;
+        penA++;
+    } else if (team === 'B' && penB < 10) {
+        rows[penB].children[7].querySelector("input").checked = true;
+        penB++;
     }
+    document.getElementById("pen" + team).innerText = (team === 'A' ? penA : penB);
 }
 
-function runTimer() {
+function removePen(team) {
+    const rows = document.querySelectorAll("#scoreTable tbody tr");
+    if (team === 'A' && penA > 0) {
+        penA--;
+        rows[penA].children[1].querySelector("input").checked = false;
+    } else if (team === 'B' && penB > 0) {
+        penB--;
+        rows[penB].children[7].querySelector("input").checked = false;
+    }
+    document.getElementById("pen" + team).innerText = (team === 'A' ? penA : penB);
+}
+
+let countdown, totalSeconds = 0, isPaused = false;
+function startTimer() {
+    clearInterval(countdown);
+    totalSeconds = parseInt(document.getElementById("gameTime").value) * 60;
+    isPaused = false;
     countdown = setInterval(() => {
-        if (totalSeconds <= 0) {
-            clearInterval(countdown);
-            timerState = "stopped";
-            resetTimerUI();
-            alert("Tyd is verby!");
-            return;
-        }
+        if (isPaused) return;
+        let min = Math.floor(totalSeconds / 60), sec = totalSeconds % 60;
+        document.getElementById("timerDisplay").innerText = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+        if (totalSeconds <= 0) { clearInterval(countdown); alert("Tyd verby!"); }
         totalSeconds--;
-        let m = Math.floor(totalSeconds / 60), s = totalSeconds % 60;
-        document.getElementById("timerDisplay").innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }, 1000);
 }
-
-function resetTimer() {
-    clearInterval(countdown);
-    timerState = "stopped";
-    totalSeconds = 0;
-    document.getElementById("timerDisplay").innerText = "00:00";
-    resetTimerUI();
-}
-
-function resetTimerUI() {
-    const btn = document.getElementById("timerToggle");
-    btn.innerHTML = "<span>▶</span> Begin Tyd";
-    btn.className = "btn-main btn-start";
-}
-
-// Penne controls
-function addPen(t) {
-    const rows = document.querySelectorAll("#scoreTable tbody tr");
-    if (t === 'A' && penA < 10) { rows[penA].children[1].querySelector("input").checked = true; penA++; }
-    else if (t === 'B' && penB < 10) { rows[penB].children[7].querySelector("input").checked = true; penB++; }
-    document.getElementById("pen" + t).innerText = (t === 'A' ? penA : penB);
-}
-function removePen(t) {
-    const rows = document.querySelectorAll("#scoreTable tbody tr");
-    if (t === 'A' && penA > 0) { penA--; rows[penA].children[1].querySelector("input").checked = false; }
-    else if (t === 'B' && penB > 0) { penB--; rows[penB].children[7].querySelector("input").checked = false; }
-    document.getElementById("pen" + t).innerText = (t === 'A' ? penA : penB);
-}
+function pauseTimer() { isPaused = !isPaused; }
+function resetTimer() { clearInterval(countdown); document.getElementById("timerDisplay").innerText = "00:00"; }
 </script>
 </body>
 </html>
