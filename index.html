@@ -14,7 +14,6 @@
             --border: #334155;
         }
 
-        /* 1. CRITICAL FIX: The html and body must be locked to the viewport */
         html, body {
             overflow: hidden;
             height: 100%;
@@ -22,34 +21,30 @@
             margin: 0;
             padding: 0;
             background: var(--bg-dark);
-            overscroll-behavior: none;
+            /* Prevents the browser from trying to be helpful by scrolling the page */
+            overscroll-behavior: none; 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
-        .container { 
+        #app-container { 
             max-width: 950px; 
             margin: auto; 
             display: flex; 
             flex-direction: column; 
-            
-            /* 2. CRITICAL FIX: Position fixed with safe area padding */
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            
-            /* env(safe-area-inset-top) pushes the content below the notch/address bar */
+            /* We use a variable for height that the script will update */
+            height: 100vh; 
             padding: calc(10px + env(safe-area-inset-top)) 10px 10px 10px;
             box-sizing: border-box;
-            height: 100%; /* Fallback */
-            height: 100svh; /* Modern mobile standard */
+            background: var(--bg-dark);
         }
         
         .fixed-top {
             flex-shrink: 0;
             width: 100%;
-            z-index: 100;
         }
 
         #scoreDisplay { font-size: 22px; margin: 0 0 10px 0; font-weight: bold; color: white; text-align: center;}
@@ -68,6 +63,8 @@
         .big-btn { font-size: 28px; width: 65px; height: 50px; background: #22c55e; border: none; border-radius: 12px; color: white; box-shadow: 0 4px 0 #16a34a; cursor: pointer; }
         .small-btn { font-size: 18px; width: 35px; height: 40px; background: #ef4444; border: none; border-radius: 10px; color: white; box-shadow: 0 4px 0 #b91c1c; cursor: pointer; }
         .pen-display { font-size: 32px; font-weight: bold; color: var(--accent-yellow); min-width: 40px; text-align: center;}
+        
+        /* inputmode="decimal" helps prevent full layout shifts on some devices */
         input[type="number"] { width: 55px; padding: 8px; background: var(--bg-dark); color: white; border: 2px solid var(--border); border-radius: 8px; font-size: 18px; text-align: center; font-weight: bold; }
 
         .table-container {
@@ -96,8 +93,8 @@
         .col-spacer { width: 15px; background: transparent !important; }
         
         .score-block { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: rgba(255,255,255,0.1); }
-        .active-A { background: var(--accent-green) !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #4ade80; }
-        .active-B { background: #2563eb !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #60a5fa; }
+        .active-A { background: var(--accent-green) !important; color: white !important; }
+        .active-B { background: #2563eb !important; color: white !important; }
 
         input[type="checkbox"] { 
             appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
@@ -111,7 +108,7 @@
 </head>
 <body>
 
-<div class="container">
+<div id="app-container">
     <div class="fixed-top">
         <h2 id="scoreDisplay">
             <span id="teamAName" contenteditable="true" class="editable-name">Kranspoort</span>: <span id="valA">0</span> | 
@@ -121,9 +118,9 @@
         <div class="timer-box">
             <div style="margin-bottom: 5px;">
                 <select id="gameTime" style="background:var(--bg-dark); color:white; padding:6px; border-radius:8px; border:1px solid var(--border)">
-                    <option value="20">20</option><option value="25">25</option><option value="30" selected>30</option>
-                    <option value="35">35</option><option value="40">40</option><option value="45">45</option>
-                    <option value="50">50</option><option value="55">55</option><option value="60">60</option>
+                    <option value="30" selected>30</option>
+                    <option value="45">45</option>
+                    <option value="60">60</option>
                 </select>
                 <button id="timerToggle" class="btn-main btn-start" onclick="toggleTimer()"><span>▶</span> Begin</button>
                 <button class="btn-main btn-reset" onclick="resetTimer()"><span>↺</span></button>
@@ -147,9 +144,9 @@
         </div>
 
         <div class="controls-row">
-            <input type="number" id="leA" placeholder="Lê" inputmode="numeric">
+            <input type="number" id="leA" placeholder="Lê" inputmode="decimal">
             <button class="btn-main" style="flex-grow:1; background:#2563eb; height:50px;" onclick="addRound()">Eindig Rondte</button>
-            <input type="number" id="leB" placeholder="Lê" inputmode="numeric">
+            <input type="number" id="leB" placeholder="Lê" inputmode="decimal">
         </div>
     </div>
 
@@ -170,6 +167,26 @@
 </div>
 
 <script>
+// ================= VIEWPORT FIX (THE CURE) =================
+// This keeps the app visible even when the keyboard pops up
+function adjustViewport() {
+    const view = window.visualViewport;
+    const container = document.getElementById('app-container');
+    
+    // Set the height of our container to the height of the VISIBLE area
+    container.style.height = `${view.height}px`;
+    // Offset the container so it's always at the top of the visible area
+    container.style.top = `${view.offsetTop}px`;
+    
+    // Force the scroll to the top of the document to prevent browser "push"
+    window.scrollTo(0, 0);
+}
+
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', adjustViewport);
+    window.visualViewport.addEventListener('scroll', adjustViewport);
+}
+
 // ================= BUILD TABLE =================
 const tbody = document.querySelector("#scoreTable tbody");
 for (let i = 1; i <= 23; i++) {
@@ -234,14 +251,14 @@ function addRound() {
     if (scoreA > 23) scoreA = 23; if (scoreB > 23) scoreB = 23;
     updateScoreDisplay();
     resetRoundInputs();
-    document.getElementById("leA").blur();
-    document.getElementById("leB").blur();
+    
+    // This forces the keyboard to close and the layout to reset
+    document.activeElement.blur();
 }
 
 function fullReset() {
-    if (confirm("Begin nuwe wedstryd? Kranspoort bly.")) {
+    if (confirm("Begin nuwe wedstryd?")) {
         scoreA = 0; scoreB = 0;
-        document.getElementById("teamBName").innerText = "Opponente";
         updateScoreDisplay();
         resetRoundInputs();
         document.getElementById("scrollWindow").scrollTo({ top: 0, behavior: 'smooth' });
