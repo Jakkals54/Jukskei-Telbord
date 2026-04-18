@@ -14,14 +14,17 @@
             --border: #334155;
         }
 
-        body {
+       body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg-dark);
             color: white;
             text-align: center;
             margin: 0;
             padding: 10px;
-            overflow: hidden; /* Prevents the whole page from bouncing on mobile */
+            /* REMOVED: overflow: hidden (let the browser handle the container) */
+            
+            /* ADDED: Ensure the body doesn't bounce */
+            overscroll-behavior: none; 
         }
 
         .container { 
@@ -29,12 +32,30 @@
             margin: auto; 
             display: flex; 
             flex-direction: column; 
-            height: 98vh; /* Use almost full viewport height */
+            
+            /* UPDATED: Use 100svh (Short Viewport Height) */
+            height: 100svh; 
+            box-sizing: border-box;
+            overflow: hidden; /* Keep the scrolling inside the container only */
         }
         
         /* TOP SECTION (FIXED) */
         .fixed-top {
             flex-shrink: 0;
+            padding-bottom: 10px;
+        }
+
+        /* MIDDLE SECTION (SCROLLABLE) */
+        .table-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-dark);
+            
+            /* Force hardware acceleration for smoother scrolling */
+            -webkit-overflow-scrolling: touch; 
+            margin-bottom: 10px; /* Space at the very bottom */
         }
 
         #scoreDisplay { font-size: 24px; margin: 10px 0; font-weight: bold; }
