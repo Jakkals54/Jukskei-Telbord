@@ -3,122 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Jukskei Scoreboard Pro</title>
+    <title>Jukskei Pro</title>
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --panel-bg: #1e293b;
-            --accent-blue: #3b82f6;
-            --accent-green: #16a34a;
-            --accent-yellow: #facc15;
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --blue: #3b82f6;
+            --green: #16a34a;
+            --yellow: #facc15;
             --border: #334155;
         }
 
+        /* Prevent the browser from moving the "window" at all */
         html, body {
             overflow: hidden;
             height: 100%;
+            position: fixed;
+            width: 100%;
             margin: 0;
-            background: var(--bg-dark);
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
+            background: var(--bg);
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
-        /* Main Wrapper */
-        .app-wrapper {
+        .app-container {
             display: flex;
             flex-direction: column;
-            height: 100svh;
-            max-width: 600px;
+            height: 100svh; /* Use SVH for mobile address bar safety */
+            width: 100%;
+            max-width: 500px;
             margin: 0 auto;
         }
 
-        /* 1. TOP HEADER (Score & Timer) */
+        /* HEADER AREA */
         header {
             flex-shrink: 0;
             padding: 10px;
-            background: var(--bg-dark);
-            border-bottom: 1px solid var(--border);
-            z-index: 10;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
         }
 
-        #scoreDisplay { font-size: 20px; margin: 0 0 10px 0; text-align: center; font-weight: bold; }
-        .editable-name { color: #60a5fa; border-bottom: 1px dashed #60a5fa; }
-        
-        .timer-box { 
-            background: var(--panel-bg); 
-            border-radius: 10px; 
-            padding: 8px; 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: center;
-        }
-        #timerDisplay { font-size: 32px; font-weight: bold; font-family: monospace; }
+        .score-row { display: flex; justify-content: space-around; font-size: 20px; font-weight: bold; color: white; margin-bottom: 10px; }
+        .timer-row { background: var(--panel); border-radius: 8px; padding: 8px; display: flex; justify-content: space-between; align-items: center; color: white; }
 
-        /* 2. MIDDLE (Scrollable Table) */
-        .table-area {
+        /* SCROLLABLE TABLE AREA */
+        .scroll-area {
             flex-grow: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 5px 10px;
+            padding: 0 5px;
+            background: var(--bg);
         }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
-        thead th { position: sticky; top: 0; background: #334155; font-size: 10px; padding: 8px 0; z-index: 5; }
-        td { background: var(--panel-bg); height: 40px; text-align: center; }
-        .score-block { font-size: 14px; opacity: 0.2; font-weight: bold; }
-        .active-A { background: var(--accent-green) !important; opacity: 1 !important; }
-        .active-B { background: var(--accent-blue) !important; opacity: 1 !important; }
+        table { width: 100%; border-spacing: 0 4px; border-collapse: separate; }
+        thead th { position: sticky; top: 0; background: #334155; color: white; font-size: 10px; padding: 10px 0; z-index: 50; }
+        td { background: var(--panel); height: 45px; text-align: center; color: white; }
 
-        /* 3. BOTTOM PANEL (Inputs & Buttons) */
+        /* Highlight classes */
+        .block { font-weight: bold; opacity: 0.1; font-size: 14px; }
+        .active-a { background: var(--green) !important; opacity: 1 !important; color: white; }
+        .active-b { background: var(--blue) !important; opacity: 1 !important; color: white; }
+
+        /* CONTROLS AREA (The Anchor) */
         footer {
             flex-shrink: 0;
-            background: var(--panel-bg);
-            padding: 15px 10px calc(15px + env(safe-area-inset-bottom));
+            background: var(--panel);
             border-top: 2px solid var(--border);
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+            padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
         }
 
-        .pen-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .pen-controls { display: flex; align-items: center; gap: 8px; }
-        .pen-val { font-size: 30px; font-weight: bold; color: var(--accent-yellow); min-width: 30px; text-align: center; }
-        
-        .action-row { display: flex; gap: 10px; align-items: center; }
-        input[type="number"] { 
-            width: 60px; height: 50px; background: var(--bg-dark); color: white; 
-            border: 2px solid var(--border); border-radius: 8px; text-align: center; font-size: 20px; 
-        }
-        .btn-finish { flex-grow: 1; height: 50px; background: var(--accent-blue); border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 16px; }
+        .btn-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .pen-btn { width: 45px; height: 45px; border-radius: 50%; border: none; color: white; font-size: 20px; font-weight: bold; }
+        .pen-val { font-size: 28px; font-weight: bold; color: var(--yellow); min-width: 35px; text-align: center; }
 
-        /* Utility Buttons */
-        .circ-btn { width: 45px; height: 45px; border-radius: 50%; border: none; color: white; font-size: 24px; font-weight: bold; }
-        .btn-plus { background: var(--accent-green); }
-        .btn-minus { background: #ef4444; }
+        .input-row { display: flex; gap: 8px; }
+        input { flex: 0 0 60px; height: 45px; background: var(--bg); border: 2px solid var(--border); border-radius: 8px; color: white; text-align: center; font-size: 18px; font-weight: bold; }
+        .finish-btn { flex: 1; height: 45px; background: var(--blue); border: none; border-radius: 8px; color: white; font-weight: bold; }
+
     </style>
 </head>
 <body>
 
-<div class="app-wrapper">
+<div class="app-container">
     <header>
-        <div id="scoreDisplay">
-            <span id="teamAName" contenteditable="true" class="editable-name">Kranspoort</span>: <span id="valA">0</span> | 
-            <span id="teamBName" contenteditable="true" class="editable-name">Opponente</span>: <span id="valB">0</span>
+        <div class="score-row">
+            <span>Kranspoort: <span id="sA">0</span></span>
+            <span>|</span>
+            <span>Opponente: <span id="sB">0</span></span>
         </div>
-        <div class="timer-box">
-            <div id="timerDisplay">00:00</div>
-            <button onclick="toggleTimer()" style="background:none; border:1px solid white; color:white; border-radius:5px; padding:5px 10px;">▶ Start</button>
-            <button onclick="fullReset()" style="background:none; border:none; color:#94a3b8; font-size:12px;">↺ Reset All</button>
+        <div class="timer-row">
+            <span id="timerDisp" style="font-family: monospace; font-size: 24px;">30:00</span>
+            <button onclick="toggleTimer()" style="background:var(--green); border:none; color:white; padding:5px 12px; border-radius:5px;">START</button>
         </div>
     </header>
 
-    <div class="table-area" id="scrollWindow">
+    <div class="scroll-area" id="scroller">
         <table>
             <thead>
                 <tr>
-                    <th>P</th><th>✓</th><th style="width:10px"></th>
-                    <th style="width:80px">Span A</th>
-                    <th>#</th>
-                    <th style="width:80px">Span B</th>
-                    <th style="width:10px"></th><th>✓</th><th>P</th>
+                    <th>P</th><th>✓</th><th style="width:70px">TEAM A</th><th>#</th><th style="width:70px">TEAM B</th><th>✓</th><th>P</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -126,110 +109,104 @@
     </div>
 
     <footer>
-        <div class="pen-row">
-            <div class="pen-controls">
-                <button class="circ-btn btn-plus" onclick="addPen('A')">+</button>
-                <button class="circ-btn btn-minus" onclick="removePen('A')">-</button>
-                <span class="pen-val" id="penA">0</span>
+        <div class="btn-row">
+            <div style="display:flex; gap:5px; align-items:center;">
+                <button class="pen-btn" style="background:var(--green)" onclick="changePen('A', 1)">+</button>
+                <button class="pen-btn" style="background:#ef4444" onclick="changePen('A', -1)">-</button>
+                <span class="pen-val" id="pA">0</span>
             </div>
-            <div style="font-size:12px; color:#94a3b8;">PENNE</div>
-            <div class="pen-controls">
-                <span class="pen-val" id="penB">0</span>
-                <button class="circ-btn btn-plus" onclick="addPen('B')">+</button>
-                <button class="circ-btn btn-minus" onclick="removePen('B')">-</button>
+            <span style="color:#94a3b8; font-size:12px;">PENNE</span>
+            <div style="display:flex; gap:5px; align-items:center;">
+                <span class="pen-val" id="pB">0</span>
+                <button class="pen-btn" style="background:var(--green)" onclick="changePen('B', 1)">+</button>
+                <button class="pen-btn" style="background:#ef4444" onclick="changePen('B', -1)">-</button>
             </div>
         </div>
-
-        <div class="action-row">
-            <input type="number" id="leA" placeholder="Lê" inputmode="decimal">
-            <button class="btn-finish" onclick="addRound()">EINDIG RONDTE</button>
-            <input type="number" id="leB" placeholder="Lê" inputmode="decimal">
+        <div class="input-row">
+            <input type="number" id="lA" placeholder="Lê" inputmode="decimal">
+            <button class="finish-btn" onclick="finishRound()">EINDIG RONDTE</button>
+            <input type="number" id="lB" placeholder="Lê" inputmode="decimal">
         </div>
     </footer>
 </div>
 
 <script>
-let penA = 0, penB = 0, scoreA = 0, scoreB = 0;
+    let scoreA = 0, scoreB = 0, penA = 0, penB = 0;
 
-// Build Table
-const tbody = document.getElementById("tableBody");
-for (let i = 1; i <= 23; i++) {
-    const row = document.createElement("tr");
-    row.id = `row-${i}`;
-    row.innerHTML = `
-        <td style="font-size:10px;">${i <= 10 ? i : ""}</td>
-        <td>${i <= 10 ? '<input type="checkbox" disabled id="checkA-'+i+'">' : ""}</td>
-        <td></td>
-        <td id="trackA-${i}"><div class="score-block">${i}</div></td>
-        <td style="background:#334155;">${i}</td>
-        <td id="trackB-${i}"><div class="score-block">${i}</div></td>
-        <td></td>
-        <td>${i <= 10 ? '<input type="checkbox" disabled id="checkB-'+i+'">' : ""}</td>
-        <td style="font-size:10px;">${i <= 10 ? i : ""}</td>
-    `;
-    tbody.appendChild(row);
-}
-
-function updateScoreDisplay() {
-    document.getElementById("valA").innerText = scoreA;
-    document.getElementById("valB").innerText = scoreB;
+    // Generate Table
+    const body = document.getElementById('tableBody');
     for (let i = 1; i <= 23; i++) {
-        document.getElementById(`trackA-${i}`).firstElementChild.className = i <= scoreA ? 'score-block active-A' : 'score-block';
-        document.getElementById(`trackB-${i}`).firstElementChild.className = i <= scoreB ? 'score-block active-B' : 'score-block';
+        body.innerHTML += `
+            <tr id="r-${i}">
+                <td style="font-size:9px">${i <= 10 ? i : ''}</td>
+                <td>${i <= 10 ? `<input type="checkbox" id="cA-${i}" disabled>` : ''}</td>
+                <td id="tA-${i}"><div class="block">${i}</div></td>
+                <td style="background:#334155; font-weight:bold;">${i}</td>
+                <td id="tB-${i}"><div class="block">${i}</div></td>
+                <td>${i <= 10 ? `<input type="checkbox" id="cB-${i}" disabled>` : ''}</td>
+                <td style="font-size:9px">${i <= 10 ? i : ''}</td>
+            </tr>`;
     }
-    autoCenterView();
-}
 
-function autoCenterView() {
-    const target = Math.max(Math.round((scoreA + scoreB) / 2), 4);
-    const row = document.getElementById(`row-${target}`);
-    const win = document.getElementById("scrollWindow");
-    if (row) win.scrollTo({ top: row.offsetTop - (win.offsetHeight / 2), behavior: 'smooth' });
-}
+    function changePen(team, val) {
+        if (team === 'A') {
+            if (val > 0 && penA < 10) { penA++; document.getElementById('cA-'+penA).checked = true; }
+            else if (val < 0 && penA > 0) { document.getElementById('cA-'+penA).checked = false; penA--; }
+            document.getElementById('pA').innerText = penA;
+        } else {
+            if (val > 0 && penB < 10) { penB++; document.getElementById('cB-'+penB).checked = true; }
+            else if (val < 0 && penB > 0) { document.getElementById('cB-'+penB).checked = false; penB--; }
+            document.getElementById('pB').innerText = penB;
+        }
+    }
 
-function addPen(t) {
-    if (t === 'A' && penA < 10) { penA++; document.getElementById('checkA-'+penA).checked = true; }
-    else if (t === 'B' && penB < 10) { penB++; document.getElementById('checkB-'+penB).checked = true; }
-    document.getElementById("pen" + t).innerText = (t === 'A' ? penA : penB);
-}
+    function finishRound() {
+        let lA = parseInt(document.getElementById('lA').value) || 0;
+        let lB = parseInt(document.getElementById('lB').value) || 0;
+        let diff = Math.abs(penA - penB);
+        
+        if (penA > penB) scoreA += (diff * 3); else if (penB > penA) scoreB += (diff * 3);
+        if (lA > lB) scoreA += lA; else if (lB > lA) scoreB += lB;
+        
+        scoreA = Math.min(scoreA, 23); scoreB = Math.min(scoreB, 23);
+        
+        // Update display
+        document.getElementById('sA').innerText = scoreA;
+        document.getElementById('sB').innerText = scoreB;
+        
+        for (let i = 1; i <= 23; i++) {
+            document.getElementById(`tA-${i}`).firstElementChild.className = i <= scoreA ? 'block active-a' : 'block';
+            document.getElementById(`tB-${i}`).firstElementChild.className = i <= scoreB ? 'block active-b' : 'block';
+        }
 
-function removePen(t) {
-    if (t === 'A' && penA > 0) { document.getElementById('checkA-'+penA).checked = false; penA--; }
-    else if (t === 'B' && penB > 0) { document.getElementById('checkB-'+penB).checked = false; penB--; }
-    document.getElementById("pen" + t).innerText = (t === 'A' ? penA : penB);
-}
+        // Reset inputs
+        penA = 0; penB = 0;
+        document.getElementById('pA').innerText = 0; document.getElementById('pB').innerText = 0;
+        document.getElementById('lA').value = ''; document.getElementById('lB').value = '';
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        
+        // Kill keyboard
+        document.activeElement.blur();
+        
+        // Scroll logic (Manual offset to prevent window jump)
+        const targetIdx = Math.max(scoreA, scoreB, 1);
+        const row = document.getElementById('r-' + targetIdx);
+        const scroller = document.getElementById('scroller');
+        if (row) {
+            scroller.scrollTop = row.offsetTop - 50; 
+        }
+    }
 
-function addRound() {
-    let leA = parseInt(document.getElementById("leA").value) || 0;
-    let leB = parseInt(document.getElementById("leB").value) || 0;
-    let diff = Math.abs(penA - penB);
-    if (penA > penB) scoreA += (diff * 3); else if (penB > penA) scoreB += (diff * 3);
-    if (leA > leB) scoreA += leA; else if (leB > leA) scoreB += leB;
-    scoreA = Math.min(scoreA, 23); scoreB = Math.min(scoreB, 23);
-    
-    updateScoreDisplay();
-    // Reset inputs
-    penA = 0; penB = 0;
-    document.getElementById("penA").innerText = 0; document.getElementById("penB").innerText = 0;
-    document.getElementById("leA").value = ""; document.getElementById("leB").value = "";
-    document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-    document.activeElement.blur(); // Hide keyboard
-}
-
-function fullReset() {
-    if(confirm("New Game?")) location.reload();
-}
-
-// Timer Logic
-let timer, seconds = 1800; 
-function toggleTimer() {
-    if (timer) { clearInterval(timer); timer = null; } 
-    else { timer = setInterval(() => {
-        seconds--;
-        let m = Math.floor(seconds/60), s = seconds%60;
-        document.getElementById("timerDisplay").innerText = `${m}:${s<10?'0':''}${s}`;
-    }, 1000); }
-}
+    // Basic Timer
+    let tInterval, sec = 1800;
+    function toggleTimer() {
+        if (tInterval) { clearInterval(tInterval); tInterval = null; }
+        else { tInterval = setInterval(() => {
+            sec--;
+            let m = Math.floor(sec/60), s = sec%60;
+            document.getElementById('timerDisp').innerText = `${m}:${s<10?'0':''}${s}`;
+        }, 1000); }
+    }
 </script>
 </body>
 </html>
