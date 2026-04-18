@@ -14,17 +14,15 @@
             --border: #334155;
         }
 
-       body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-dark);
-            color: white;
-            text-align: center;
+        /* Prevent the whole page from bouncing/scrolling */
+        html, body {
+            overflow: hidden;
+            height: 100%;
             margin: 0;
-            padding: 10px;
-            /* REMOVED: overflow: hidden (let the browser handle the container) */
-            
-            /* ADDED: Ensure the body doesn't bounce */
-            overscroll-behavior: none; 
+            padding: 0;
+            background: var(--bg-dark);
+            overscroll-behavior: none;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         .container { 
@@ -32,62 +30,53 @@
             margin: auto; 
             display: flex; 
             flex-direction: column; 
-            
-            /* UPDATED: Use 100svh (Short Viewport Height) */
-            height: 100svh; 
+            /* Fixed position and svh prevents the "shift" when scrolling or buttons are pressed */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100svh;
+            padding: 10px;
             box-sizing: border-box;
-            overflow: hidden; /* Keep the scrolling inside the container only */
         }
         
         /* TOP SECTION (FIXED) */
         .fixed-top {
             flex-shrink: 0;
-            padding-bottom: 10px;
+            width: 100%;
         }
 
-        /* MIDDLE SECTION (SCROLLABLE) */
+        #scoreDisplay { font-size: 24px; margin: 5px 0 10px 0; font-weight: bold; color: white; text-align: center;}
+        .editable-name { border-bottom: 2px dashed var(--accent-blue); padding: 2px 5px; color: #60a5fa; }
+
+        .timer-box { background: var(--panel-bg); padding: 10px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); text-align: center;}
+        #timerDisplay { font-size: 40px; font-family: 'Courier New', monospace; color: #f8fafc; margin: 5px 0; font-weight: bold; }
+        
+        /* BUTTONS */
+        .btn-main { padding: 12px 15px; font-size: 16px; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn-start { background: var(--accent-green); min-width: 120px; }
+        .btn-pause { background: #ef4444; min-width: 120px; }
+        .btn-continue { background: var(--accent-yellow); color: #000; min-width: 120px; }
+        .btn-reset { background: #64748b; margin-left: 5px; }
+        
+        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
+        .big-btn { font-size: 32px; width: 70px; height: 55px; background: #22c55e; border: none; border-radius: 12px; color: white; box-shadow: 0 4px 0 #16a34a; cursor: pointer; }
+        .small-btn { font-size: 18px; width: 40px; height: 45px; background: #ef4444; border: none; border-radius: 10px; color: white; box-shadow: 0 4px 0 #b91c1c; cursor: pointer; }
+        .pen-display { font-size: 38px; font-weight: bold; color: var(--accent-yellow); min-width: 45px; text-align: center;}
+        input[type="number"] { width: 60px; padding: 10px; background: var(--bg-dark); color: white; border: 2px solid var(--border); border-radius: 8px; font-size: 18px; text-align: center; font-weight: bold; }
+
+        /* MIDDLE SECTION (ONLY SCROLLABLE PART) */
         .table-container {
             flex-grow: 1;
             overflow-y: auto;
             border: 2px solid var(--border);
             border-radius: 12px;
             background: var(--bg-dark);
-            
-            /* Force hardware acceleration for smoother scrolling */
-            -webkit-overflow-scrolling: touch; 
-            margin-bottom: 10px; /* Space at the very bottom */
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 5px;
         }
 
-        #scoreDisplay { font-size: 24px; margin: 10px 0; font-weight: bold; }
-        .editable-name { border-bottom: 2px dashed var(--accent-blue); padding: 2px 5px; color: #60a5fa; }
-
-        .timer-box { background: var(--panel-bg); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
-        #timerDisplay { font-size: 48px; font-family: 'Courier New', monospace; color: #f8fafc; margin: 5px 0; font-weight: bold; }
-        
-        /* BUTTONS */
-        .btn-main { padding: 12px 15px; font-size: 16px; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
-        .btn-start { background: var(--accent-green); min-width: 140px; }
-        .btn-pause { background: #ef4444; min-width: 140px; }
-        .btn-continue { background: var(--accent-yellow); color: #000; min-width: 140px; }
-        .btn-reset { background: #64748b; margin-left: 5px; }
-        
-        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
-        .big-btn { font-size: 32px; width: 80px; height: 60px; background: #22c55e; border: none; border-radius: 12px; color: white; box-shadow: 0 4px 0 #16a34a; cursor: pointer; }
-        .small-btn { font-size: 18px; width: 40px; height: 50px; background: #ef4444; border: none; border-radius: 10px; color: white; box-shadow: 0 4px 0 #b91c1c; cursor: pointer; }
-        .pen-display { font-size: 38px; font-weight: bold; color: var(--accent-yellow); min-width: 45px; }
-        input[type="number"] { width: 65px; padding: 10px; background: var(--bg-dark); color: white; border: 2px solid var(--border); border-radius: 8px; font-size: 18px; text-align: center; font-weight: bold; }
-
-        /* MIDDLE SECTION (SCROLLABLE) */
-        .table-container {
-            flex-grow: 1; /* Takes up all remaining space */
-            overflow-y: auto;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            background: var(--bg-dark);
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iPhones */
-        }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0px 4px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0px 4px; text-align: center;}
         thead th { 
             background: #334155; 
             padding: 10px 2px; 
@@ -95,25 +84,25 @@
             position: sticky; 
             top: 0; 
             z-index: 20; 
+            color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-        td { background: var(--panel-bg); height: 48px; }
+        td { background: var(--panel-bg); height: 48px; color: white;}
         
-        .col-track { width: 120px; }
-        .col-spacer { width: 25px; background: transparent !important; }
+        .col-track { width: 100px; }
+        .col-spacer { width: 20px; background: transparent !important; }
         
-        .score-block { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255,255,255,0.05); }
+        .score-block { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255,255,255,0.1); }
         .active-A { background: var(--accent-green) !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #4ade80; }
         .active-B { background: #2563eb !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #60a5fa; }
 
-        /* CHECKBOXES */
         input[type="checkbox"] { 
-            appearance: none; -webkit-appearance: none; width: 24px; height: 24px;
+            appearance: none; -webkit-appearance: none; width: 22px; height: 22px;
             background-color: #334155; border: 2px solid #475569; border-radius: 4px;
-            display: inline-grid; place-content: center; transform: scale(1.2);
+            display: inline-grid; place-content: center;
         }
         input[type="checkbox"]:checked { background-color: var(--accent-yellow); border-color: #fef08a; }
-        input[type="checkbox"]::before { content: ""; width: 14px; height: 14px; transform: scale(0); box-shadow: inset 1em 1em var(--bg-dark); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+        input[type="checkbox"]::before { content: ""; width: 12px; height: 12px; transform: scale(0); box-shadow: inset 1em 1em var(--bg-dark); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
         input[type="checkbox"]:checked::before { transform: scale(1); }
     </style>
 </head>
@@ -127,19 +116,19 @@
         </h2>
 
         <div class="timer-box">
-            <div style="margin-bottom: 8px;">
-                <select id="gameTime" style="background:var(--bg-dark); color:white; padding:8px; border-radius:8px;">
+            <div style="margin-bottom: 5px;">
+                <select id="gameTime" style="background:var(--bg-dark); color:white; padding:8px; border-radius:8px; border:1px solid var(--border)">
                     <option value="20">20</option><option value="25">25</option><option value="30" selected>30</option>
                     <option value="35">35</option><option value="40">40</option><option value="45">45</option>
                     <option value="50">50</option><option value="55">55</option><option value="60">60</option>
                 </select>
-                <button id="timerToggle" class="btn-main btn-start" onclick="toggleTimer()"><span>▶</span> Begin Tyd</button>
-                <button class="btn-main btn-reset" onclick="resetTimer()"><span>↺</span> Herstel</button>
+                <button id="timerToggle" class="btn-main btn-start" onclick="toggleTimer()"><span>▶</span> Begin</button>
+                <button class="btn-main btn-reset" onclick="resetTimer()"><span>↺</span></button>
             </div>
             <h1 id="timerDisplay">00:00</h1>
         </div>
 
-        <button class="btn-main" style="background:#6366f1; width:100%; margin-bottom:8px;" onclick="fullReset()">Nuwe Wedstryd (Total Reset)</button>
+        <button class="btn-main" style="background:#6366f1; width:100%; margin-bottom:8px;" onclick="fullReset()">Nuwe Wedstryd</button>
 
         <div class="controls-row">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -155,9 +144,9 @@
         </div>
 
         <div class="controls-row">
-            <input type="number" id="leA" placeholder="Lê">
+            <input type="number" id="leA" placeholder="Lê" inputmode="numeric">
             <button class="btn-main" style="flex-grow:1; background:#2563eb; height:50px;" onclick="addRound()">Eindig Rondte</button>
-            <input type="number" id="leB" placeholder="Lê">
+            <input type="number" id="leB" placeholder="Lê" inputmode="numeric">
         </div>
     </div>
 
@@ -165,11 +154,11 @@
         <table id="scoreTable">
             <thead>
                 <tr>
-                    <th style="width:40px;">P</th><th style="width:40px;">✓</th><th class="col-spacer"></th>
-                    <th class="col-track">Team A</th>
-                    <th style="width:40px;">#</th>
-                    <th class="col-track">Team B</th>
-                    <th class="col-spacer"></th><th style="width:40px;">✓</th><th style="width:40px;">P</th>
+                    <th style="width:35px;">P</th><th style="width:35px;">✓</th><th class="col-spacer"></th>
+                    <th class="col-track">Span A</th>
+                    <th style="width:35px;">#</th>
+                    <th class="col-track">Span B</th>
+                    <th class="col-spacer"></th><th style="width:35px;">✓</th><th style="width:35px;">P</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -216,18 +205,25 @@ function renderProgress() {
     }
 }
 
-// SMART CENTERING LOGIC
+// FIXED AUTO-CENTER: Only scrolls the internal div
 function autoCenterView() {
     if (scoreA === 0 && scoreB === 0) return;
     
-    // Find the average score to center the view between both teams
     const average = Math.round((scoreA + scoreB) / 2);
-    // Anchor to the average score, but ensure we don't go below row 4 for better visibility
     const target = Math.max(average, 4); 
     
     const row = document.getElementById(`row-${target}`);
-    if (row) {
-        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const scrollWindow = document.getElementById("scrollWindow");
+    
+    if (row && scrollWindow) {
+        const rowTop = row.offsetTop;
+        const containerHeight = scrollWindow.clientHeight;
+        const scrollTarget = rowTop - (containerHeight / 2) + (row.clientHeight / 2);
+
+        scrollWindow.scrollTo({
+            top: scrollTarget,
+            behavior: 'smooth'
+        });
     }
 }
 
@@ -246,6 +242,10 @@ function addRound() {
     if (scoreA > 23) scoreA = 23; if (scoreB > 23) scoreB = 23;
     updateScoreDisplay();
     resetRoundInputs();
+    
+    // Unfocus inputs to hide keyboard on mobile
+    document.getElementById("leA").blur();
+    document.getElementById("leB").blur();
 }
 
 function fullReset() {
@@ -281,7 +281,7 @@ function toggleTimer() {
     } else {
         timerState = "paused";
         clearInterval(countdown);
-        btn.innerHTML = "<span>▶</span> Gaan Voort";
+        btn.innerHTML = "<span>▶</span> Voort";
         btn.className = "btn-main btn-continue";
     }
 }
@@ -311,11 +311,10 @@ function resetTimer() {
 
 function resetTimerUI() {
     const btn = document.getElementById("timerToggle");
-    btn.innerHTML = "<span>▶</span> Begin Tyd";
+    btn.innerHTML = "<span>▶</span> Begin";
     btn.className = "btn-main btn-start";
 }
 
-// Penne controls
 function addPen(t) {
     const rows = document.querySelectorAll("#scoreTable tbody tr");
     if (t === 'A' && penA < 10) { rows[penA].children[1].querySelector("input").checked = true; penA++; }
