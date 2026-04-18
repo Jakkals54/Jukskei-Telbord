@@ -14,14 +14,17 @@
             --border: #334155;
         }
 
+        /* Prevent all horizontal and vertical window scrolling */
         html, body {
             overflow: hidden;
             height: 100%;
             position: fixed;
             width: 100%;
             margin: 0;
+            padding: 0;
             background: var(--bg);
             font-family: system-ui, -apple-system, sans-serif;
+            touch-action: manipulation;
         }
 
         .app-container {
@@ -31,32 +34,45 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
+            overflow-x: hidden; /* Strict horizontal lock */
         }
 
         header {
             flex-shrink: 0;
             padding: 10px;
-            z-index: 100;
             background: var(--bg);
             border-bottom: 2px solid var(--border);
         }
 
-        .score-row { display: flex; justify-content: space-around; font-size: 20px; font-weight: bold; color: white; margin-bottom: 10px; }
-        .timer-row { background: var(--panel); border-radius: 8px; padding: 8px; display: flex; justify-content: space-between; align-items: center; color: white; gap: 5px; }
+        .score-row { display: flex; justify-content: space-around; font-size: 18px; font-weight: bold; color: white; margin-bottom: 8px; }
+        .timer-row { background: var(--panel); border-radius: 8px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; color: white; }
         
-        select { background: var(--bg); color: white; border: 1px solid var(--border); padding: 5px; border-radius: 4px; }
+        select { background: var(--bg); color: white; border: 1px solid var(--border); padding: 4px; border-radius: 4px; font-size: 14px; }
 
         .scroll-area {
             flex-grow: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             padding: 0 5px;
-            background: var(--bg);
         }
 
-        table { width: 100%; border-spacing: 0 4px; border-collapse: separate; }
-        thead th { position: sticky; top: 0; background: #334155; color: white; font-size: 10px; padding: 10px 0; z-index: 50; }
-        td { background: var(--panel); height: 45px; text-align: center; color: white; }
+        /* FIXED TABLE WIDTHS TO PREVENT OVERFLOW */
+        table { 
+            width: 100%; 
+            border-spacing: 0 4px; 
+            border-collapse: separate; 
+            table-layout: fixed; /* Forces columns to stay within 100% */
+        }
+        
+        /* Column sizing: Total must be 100% */
+        th:nth-child(1), th:nth-child(7) { width: 8%; }  /* P column */
+        th:nth-child(2), th:nth-child(6) { width: 10%; } /* Checkbox column */
+        th:nth-child(3), th:nth-child(5) { width: 32%; } /* Team Name/Score column */
+        th:nth-child(4) { width: 10%; }                  /* Center # column */
+
+        thead th { position: sticky; top: 0; background: #334155; color: white; font-size: 10px; padding: 8px 0; z-index: 50; }
+        td { background: var(--panel); height: 42px; text-align: center; color: white; overflow: hidden; }
 
         .block { font-weight: bold; opacity: 0.1; font-size: 14px; }
         .active-a { background: var(--green) !important; opacity: 1 !important; }
@@ -69,13 +85,15 @@
             padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
         }
 
-        .btn-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .pen-btn { width: 45px; height: 45px; border-radius: 50%; border: none; color: white; font-size: 20px; font-weight: bold; }
-        .pen-val { font-size: 28px; font-weight: bold; color: var(--yellow); min-width: 35px; text-align: center; }
+        .btn-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .pen-btn { width: 42px; height: 42px; border-radius: 50%; border: none; color: white; font-size: 20px; font-weight: bold; }
+        .pen-val { font-size: 26px; font-weight: bold; color: var(--yellow); min-width: 30px; text-align: center; }
 
-        .input-row { display: flex; gap: 8px; }
-        input { flex: 0 0 60px; height: 45px; background: var(--bg); border: 2px solid var(--border); border-radius: 8px; color: white; text-align: center; font-size: 18px; font-weight: bold; }
-        .finish-btn { flex: 1; height: 45px; background: var(--blue); border: none; border-radius: 8px; color: white; font-weight: bold; }
+        .input-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+        input { width: 65px; height: 45px; background: var(--bg); border: 2px solid var(--border); border-radius: 8px; color: white; text-align: center; font-size: 18px; font-weight: bold; }
+        .finish-btn { flex: 1; height: 45px; background: var(--blue); border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 15px; }
+
+        input[type="checkbox"] { transform: scale(1.2); }
 
     </style>
 </head>
@@ -93,15 +111,11 @@
                 <option value="20">20 min</option>
                 <option value="25">25 min</option>
                 <option value="30" selected>30 min</option>
-                <option value="35">35 min</option>
-                <option value="40">40 min</option>
                 <option value="45">45 min</option>
-                <option value="50">50 min</option>
-                <option value="55">55 min</option>
                 <option value="60">60 min</option>
             </select>
-            <span id="timerDisp" style="font-family: monospace; font-size: 24px;">30:00</span>
-            <button id="tBtn" onclick="toggleTimer()" style="background:var(--green); border:none; color:white; padding:5px 12px; border-radius:5px;">START</button>
+            <span id="timerDisp" style="font-family: monospace; font-size: 22px;">30:00</span>
+            <button id="tBtn" onclick="toggleTimer()" style="background:var(--green); border:none; color:white; padding:5px 12px; border-radius:5px; font-weight:bold;">START</button>
         </div>
     </header>
 
@@ -109,7 +123,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>P</th><th>✓</th><th style="width:70px">TEAM A</th><th>#</th><th style="width:70px">TEAM B</th><th>✓</th><th>P</th>
+                    <th>P</th><th>✓</th><th>SPAN A</th><th>#</th><th>SPAN B</th><th>✓</th><th>P</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -118,13 +132,13 @@
 
     <footer>
         <div class="btn-row">
-            <div style="display:flex; gap:5px; align-items:center;">
+            <div style="display:flex; gap:8px; align-items:center;">
                 <button class="pen-btn" style="background:var(--green)" onclick="changePen('A', 1)">+</button>
                 <button class="pen-btn" style="background:#ef4444" onclick="changePen('A', -1)">-</button>
                 <span class="pen-val" id="pA">0</span>
             </div>
-            <button onclick="fullReset()" style="background:none; border:none; color:#94a3b8; font-size:11px;">NUWE WEDSTRYD</button>
-            <div style="display:flex; gap:5px; align-items:center;">
+            <button onclick="fullReset()" style="background:none; border:1px solid #475569; color:#94a3b8; font-size:10px; padding:4px 8px; border-radius:4px;">NUWE SPEL</button>
+            <div style="display:flex; gap:8px; align-items:center;">
                 <span class="pen-val" id="pB">0</span>
                 <button class="pen-btn" style="background:var(--green)" onclick="changePen('B', 1)">+</button>
                 <button class="pen-btn" style="background:#ef4444" onclick="changePen('B', -1)">-</button>
@@ -141,10 +155,9 @@
 <script>
     let scoreA = 0, scoreB = 0, penA = 0, penB = 0;
 
-    // Build Table
     const body = document.getElementById('tableBody');
     for (let i = 1; i <= 23; i++) {
-        body.innerHTML += `<tr id="r-${i}"><td style="font-size:9px">${i<=10?i:''}</td><td>${i<=10?`<input type="checkbox" id="cA-${i}" disabled>`:''}</td><td id="tA-${i}"><div class="block">${i}</div></td><td style="background:#334155;font-weight:bold;">${i}</td><td id="tB-${i}"><div class="block">${i}</div></td><td>${i<=10?`<input type="checkbox" id="cB-${i}" disabled>`:''}</td><td style="font-size:9px">${i<=10?i:''}</td></tr>`;
+        body.innerHTML += `<tr id="r-${i}"><td>${i<=10?i:''}</td><td>${i<=10?`<input type="checkbox" id="cA-${i}" disabled>`:''}</td><td id="tA-${i}"><div class="block">${i}</div></td><td style="background:#334155;font-weight:bold;">${i}</td><td id="tB-${i}"><div class="block">${i}</div></td><td>${i<=10?`<input type="checkbox" id="cB-${i}" disabled>`:''}</td><td>${i<=10?i:''}</td></tr>`;
     }
 
     function changePen(team, val) {
@@ -185,7 +198,6 @@
         if (row) document.getElementById('scroller').scrollTop = row.offsetTop - 60;
     }
 
-    // Timer logic with full dropdown support
     let tInterval, sec = 1800;
     document.getElementById('timeSet').onchange = function() {
         sec = this.value * 60;
