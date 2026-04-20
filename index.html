@@ -324,9 +324,30 @@ function addPen(t) {
 }
 function removePen(t) {
     const rows = document.querySelectorAll("#scoreTable tbody tr");
-    if (t === 'A' && penA > 0) { penA--; rows[penA].children[1].querySelector("input").checked = false; }
-    else if (t === 'B' && penB > 0) { penB--; rows[penB].children[7].querySelector("input").checked = false; }
-    document.getElementById("pen" + t).innerText = (t === 'A' ? penA : penB);
+    
+    if (t === 'A') {
+        if (penA > 0) {
+            // Priority 1: Deduct from current round (Pen count)
+            penA--;
+            rows[penA].children[1].querySelector("input").checked = false;
+            document.getElementById("penA").innerText = penA;
+        } else if (scoreA > 0) {
+            // Priority 2: Deduct from main scoreboard if pen is empty
+            scoreA--;
+            updateScoreDisplay();
+        }
+    } else if (t === 'B') {
+        if (penB > 0) {
+            // Priority 1: Deduct from current round (Pen count)
+            penB--;
+            rows[penB].children[7].querySelector("input").checked = false;
+            document.getElementById("penB").innerText = penB;
+        } else if (scoreB > 0) {
+            // Priority 2: Deduct from main scoreboard if pen is empty
+            scoreB--;
+            updateScoreDisplay();
+        }
+    }
 }
 </script>
 </body>
