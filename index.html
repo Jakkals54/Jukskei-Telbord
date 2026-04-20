@@ -276,13 +276,13 @@ function toggleTimer() {
     if (timerState === "stopped" || timerState === "paused") {
         if (timerState === "stopped") totalSeconds = parseInt(document.getElementById("gameTime").value) * 60;
         timerState = "running";
-        btn.innerHTML = "<span>⏸</span> Gaan Voort";
+        btn.innerHTML = "<span>⏸</span> Pouseer";
         btn.className = "btn-main btn-pause";
         runTimer();
     } else {
         timerState = "paused";
         clearInterval(countdown);
-        btn.innerHTML = "<span>▶</span> Pouseer";
+        btn.innerHTML = "<span>▶</span> Go";
         btn.className = "btn-main btn-continue";
     }
 }
