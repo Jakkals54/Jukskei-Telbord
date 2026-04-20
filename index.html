@@ -250,7 +250,7 @@ function addRound() {
 }
 
 function fullReset() {
-    if (confirm("Begin nuwe wedstryd? Kranspoort bly.")) {
+    if (confirm("Begin nuwe wedstryd?")) {
         scoreA = 0; scoreB = 0;
         document.getElementById("teamBName").innerText = "Opponente";
         updateScoreDisplay();
@@ -276,13 +276,13 @@ function toggleTimer() {
     if (timerState === "stopped" || timerState === "paused") {
         if (timerState === "stopped") totalSeconds = parseInt(document.getElementById("gameTime").value) * 60;
         timerState = "running";
-        btn.innerHTML = "<span>⏸</span> Pouseer";
+        btn.innerHTML = "<span>⏸</span> Halt";
         btn.className = "btn-main btn-pause";
         runTimer();
     } else {
         timerState = "paused";
         clearInterval(countdown);
-        btn.innerHTML = "<span>▶</span> Voort";
+        btn.innerHTML = "<span>▶</span> Tel-af";
         btn.className = "btn-main btn-continue";
     }
 }
@@ -293,7 +293,7 @@ function runTimer() {
             clearInterval(countdown);
             timerState = "stopped";
             resetTimerUI();
-            alert("Tyd is verby!");
+            alert("Tyd verstreke!");
             return;
         }
         totalSeconds--;
