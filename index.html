@@ -11,10 +11,10 @@
             --accent-blue: #3b82f6;
             --accent-green: #16a34a;
             --accent-yellow: #facc15;
+            --accent-orange: #f97316; /* Warning color */
             --border: #334155;
         }
 
-        /* Prevent the whole page from bouncing/scrolling */
         html, body {
             overflow: hidden;
             height: 100%;
@@ -30,21 +30,14 @@
             margin: auto; 
             display: flex; 
             flex-direction: column; 
-            /* Fixed position and svh prevents the "shift" when scrolling or buttons are pressed */
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 100svh;
             padding: 10px;
             box-sizing: border-box;
         }
         
-        /* TOP SECTION (FIXED) */
-        .fixed-top {
-            flex-shrink: 0;
-            width: 100%;
-        }
+        .fixed-top { flex-shrink: 0; width: 100%; }
 
         #scoreDisplay { font-size: 22px; margin: 5px 0 10px 0; font-weight: bold; color: white; text-align: center;}
         .editable-name { border-bottom: 2px dashed var(--accent-blue); padding: 2px 5px; color: #60a5fa; }
@@ -52,7 +45,11 @@
         .timer-box { background: var(--panel-bg); padding: 10px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); text-align: center;}
         #timerDisplay { font-size: 40px; font-family: 'Courier New', monospace; color: #f8fafc; margin: 5px 0; font-weight: bold; }
         
-        /* BUTTONS */
+        /* NEW RESET ROW STYLES */
+        .reset-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .btn-burst { flex: 1; padding: 12px 5px; font-size: 13px; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; background: #475569; }
+        .btn-full-reset { flex: 1.5; background: #6366f1; }
+
         .btn-main { padding: 12px 15px; font-size: 16px; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
         .btn-start { background: var(--accent-green); min-width: 120px; }
         .btn-pause { background: #ef4444; min-width: 120px; }
@@ -65,7 +62,6 @@
         .pen-display { font-size: 38px; font-weight: bold; color: var(--accent-yellow); min-width: 45px; text-align: center;}
         input[type="number"] { width: 60px; padding: 10px; background: var(--bg-dark); color: white; border: 2px solid var(--border); border-radius: 8px; font-size: 18px; text-align: center; font-weight: bold; }
 
-        /* MIDDLE SECTION (ONLY SCROLLABLE PART) */
         .table-container {
             flex-grow: 1;
             overflow-y: auto;
@@ -93,8 +89,13 @@
         .col-spacer { width: 20px; background: transparent !important; }
         
         .score-block { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255,255,255,0.1); }
+        
+        /* STANDARD COLORS */
         .active-A { background: var(--accent-green) !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #4ade80; }
         .active-B { background: #2563eb !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #60a5fa; }
+        
+        /* WARNING COLORS (17-23) */
+        .warning-score { background: var(--accent-orange) !important; color: white !important; border: 1px solid #fb923c !important; }
 
         input[type="checkbox"] { 
             appearance: none; -webkit-appearance: none; width: 22px; height: 22px;
@@ -123,12 +124,16 @@
                     <option value="50">50</option><option value="55">55</option><option value="60">60</option>
                 </select>
                 <button id="timerToggle" class="btn-main btn-start" onclick="toggleTimer()"><span>▶</span> Begin</button>
-                <button class="btn-main btn-reset" onclick="resetTimer()"><span>↺ Zero</span></button>
+                <button class="btn-main btn-reset" onclick="resetTimer()"><span>↺</span></button>
             </div>
             <h1 id="timerDisplay">00:00</h1>
         </div>
 
-        <button class="btn-main" style="background:#6366f1; width:100%; margin-bottom:8px;" onclick="fullReset()">Nuwe Wedstryd</button>
+        <div class="reset-row">
+            <button class="btn-burst" onclick="resetTeam('A')">Burst A (0)</button>
+            <button class="btn-main btn-full-reset" onclick="fullReset()">Nuwe Wedstryd</button>
+            <button class="btn-burst" onclick="resetTeam('B')">Burst B (0)</button>
+        </div>
 
         <div class="controls-row">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -140,7 +145,6 @@
                 <span id="penB" class="pen-display">0</span>
                 <button class="small-btn" onclick="removePen('B')">-</button>
                 <button class="big-btn" onclick="addPen('B')">+</button>
-                
             </div>
         </div>
 
@@ -200,31 +204,32 @@ function updateScoreDisplay() {
 function renderProgress() {
     for (let i = 1; i <= 23; i++) {
         const bA = document.getElementById(`trackA-${i}`).firstElementChild;
-        i <= scoreA ? bA.classList.add('active-A') : bA.classList.remove('active-A');
         const bB = document.getElementById(`trackB-${i}`).firstElementChild;
-        i <= scoreB ? bB.classList.add('active-B') : bB.classList.remove('active-B');
+        
+        // Team A logic
+        bA.classList.remove('active-A', 'warning-score');
+        if (i <= scoreA) {
+            bA.classList.add('active-A');
+            if (scoreA >= 17) bA.classList.add('warning-score');
+        }
+
+        // Team B logic
+        bB.classList.remove('active-B', 'warning-score');
+        if (i <= scoreB) {
+            bB.classList.add('active-B');
+            if (scoreB >= 17) bB.classList.add('warning-score');
+        }
     }
 }
 
-// FIXED AUTO-CENTER: Only scrolls the internal div
 function autoCenterView() {
     if (scoreA === 0 && scoreB === 0) return;
-    
     const average = Math.round((scoreA + scoreB) / 2);
     const target = Math.max(average, 4); 
-    
     const row = document.getElementById(`row-${target}`);
     const scrollWindow = document.getElementById("scrollWindow");
-    
     if (row && scrollWindow) {
-        const rowTop = row.offsetTop;
-        const containerHeight = scrollWindow.clientHeight;
-        const scrollTarget = rowTop - (containerHeight / 2) + (row.clientHeight / 2);
-
-        scrollWindow.scrollTo({
-            top: scrollTarget,
-            behavior: 'smooth'
-        });
+        scrollWindow.scrollTo({ top: row.offsetTop - (scrollWindow.clientHeight / 2), behavior: 'smooth' });
     }
 }
 
@@ -240,19 +245,46 @@ function addRound() {
     if (leA > leB) scoreA += leA;
     else if (leB > leA) scoreB += leB;
 
-    if (scoreA > 23) scoreA = 23; if (scoreB > 23) scoreB = 23;
     updateScoreDisplay();
     resetRoundInputs();
     
-    // Unfocus inputs to hide keyboard on mobile
     document.getElementById("leA").blur();
     document.getElementById("leB").blur();
+
+    // Check for Burst
+    if (scoreA > 23) alert(document.getElementById("teamAName").innerText + " het gebars!");
+    if (scoreB > 23) alert(document.getElementById("teamBName").innerText + " het gebars!");
+}
+
+// RESET SPECIFIC TEAM (BURST)
+function resetTeam(t) {
+    if (confirm(`Reset net Span ${t} se telling na 0?`)) {
+        if (t === 'A') {
+            scoreA = 0;
+            penA = 0;
+            document.getElementById("penA").innerText = 0;
+            // Clear A's checkboxes
+            document.querySelectorAll("#scoreTable tbody tr").forEach(row => {
+                const cb = row.children[1].querySelector("input");
+                if (cb) cb.checked = false;
+            });
+        } else {
+            scoreB = 0;
+            penB = 0;
+            document.getElementById("penB").innerText = 0;
+            // Clear B's checkboxes
+            document.querySelectorAll("#scoreTable tbody tr").forEach(row => {
+                const cb = row.children[7].querySelector("input");
+                if (cb) cb.checked = false;
+            });
+        }
+        updateScoreDisplay();
+    }
 }
 
 function fullReset() {
-    if (confirm("Begin nuwe wedstryd?")) {
+    if (confirm("Begin nuwe wedstryd vir albei spanne?")) {
         scoreA = 0; scoreB = 0;
-        document.getElementById("teamBName").innerText = "Opponente";
         updateScoreDisplay();
         resetRoundInputs();
         document.getElementById("scrollWindow").scrollTo({ top: 0, behavior: 'smooth' });
@@ -276,7 +308,7 @@ function toggleTimer() {
     if (timerState === "stopped" || timerState === "paused") {
         if (timerState === "stopped") totalSeconds = parseInt(document.getElementById("gameTime").value) * 60;
         timerState = "running";
-        btn.innerHTML = "<span>⏸</span> Stop bietjie!";
+        btn.innerHTML = "<span>⏸</span> Pouseer";
         btn.className = "btn-main btn-pause";
         runTimer();
     } else {
@@ -322,32 +354,27 @@ function addPen(t) {
     else if (t === 'B' && penB < 10) { rows[penB].children[7].querySelector("input").checked = true; penB++; }
     document.getElementById("pen" + t).innerText = (t === 'A' ? penA : penB);
 }
+
 function removePen(t) {
     const rows = document.querySelectorAll("#scoreTable tbody tr");
-    
     if (t === 'A') {
         if (penA > 0) {
-            // Priority 1: Deduct from current round (Pen count)
             penA--;
             rows[penA].children[1].querySelector("input").checked = false;
-            document.getElementById("penA").innerText = penA;
         } else if (scoreA > 0) {
-            // Priority 2: Deduct from main scoreboard if pen is empty
             scoreA--;
-            updateScoreDisplay();
         }
-    } else if (t === 'B') {
+    } else {
         if (penB > 0) {
-            // Priority 1: Deduct from current round (Pen count)
             penB--;
             rows[penB].children[7].querySelector("input").checked = false;
-            document.getElementById("penB").innerText = penB;
         } else if (scoreB > 0) {
-            // Priority 2: Deduct from main scoreboard if pen is empty
             scoreB--;
-            updateScoreDisplay();
         }
     }
+    document.getElementById("penA").innerText = penA;
+    document.getElementById("penB").innerText = penB;
+    updateScoreDisplay();
 }
 </script>
 </body>
