@@ -11,7 +11,7 @@
             --accent-blue: #3b82f6;
             --accent-green: #16a34a;
             --accent-yellow: #facc15;
-            --accent-orange: #f97316; /* Warning color */
+            --accent-orange: #f97316; 
             --border: #334155;
         }
 
@@ -42,10 +42,12 @@
         #scoreDisplay { font-size: 22px; margin: 5px 0 10px 0; font-weight: bold; color: white; text-align: center;}
         .editable-name { border-bottom: 2px dashed var(--accent-blue); padding: 2px 5px; color: #60a5fa; }
 
+        /* WARNING COLOR FOR TOP TEXT */
+        .warning-text { color: var(--accent-orange) !important; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); transition: color 0.3s ease; }
+
         .timer-box { background: var(--panel-bg); padding: 10px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); text-align: center;}
         #timerDisplay { font-size: 40px; font-family: 'Courier New', monospace; color: #f8fafc; margin: 5px 0; font-weight: bold; }
         
-        /* NEW RESET ROW STYLES */
         .reset-row { display: flex; gap: 8px; margin-bottom: 8px; }
         .btn-burst { flex: 1; padding: 12px 5px; font-size: 13px; border: none; border-radius: 10px; color: white; cursor: pointer; font-weight: bold; background: #475569; }
         .btn-full-reset { flex: 1.5; background: #6366f1; }
@@ -89,12 +91,8 @@
         .col-spacer { width: 20px; background: transparent !important; }
         
         .score-block { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: rgba(255,255,255,0.1); }
-        
-        /* STANDARD COLORS */
         .active-A { background: var(--accent-green) !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #4ade80; }
         .active-B { background: #2563eb !important; color: white !important; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 1px solid #60a5fa; }
-        
-        /* WARNING COLORS (17-23) */
         .warning-score { background: var(--accent-orange) !important; color: white !important; border: 1px solid #fb923c !important; }
 
         input[type="checkbox"] { 
@@ -195,8 +193,16 @@ for (let i = 1; i <= 23; i++) {
 let penA = 0, penB = 0, scoreA = 0, scoreB = 0;
 
 function updateScoreDisplay() {
-    document.getElementById("valA").innerText = scoreA;
-    document.getElementById("valB").innerText = scoreB;
+    const valA = document.getElementById("valA");
+    const valB = document.getElementById("valB");
+    
+    valA.innerText = scoreA;
+    valB.innerText = scoreB;
+
+    // Toggle orange color for top numbers
+    scoreA >= 17 ? valA.classList.add('warning-text') : valA.classList.remove('warning-text');
+    scoreB >= 17 ? valB.classList.add('warning-text') : valB.classList.remove('warning-text');
+
     renderProgress();
     autoCenterView();
 }
@@ -206,14 +212,12 @@ function renderProgress() {
         const bA = document.getElementById(`trackA-${i}`).firstElementChild;
         const bB = document.getElementById(`trackB-${i}`).firstElementChild;
         
-        // Team A logic
         bA.classList.remove('active-A', 'warning-score');
         if (i <= scoreA) {
             bA.classList.add('active-A');
             if (scoreA >= 17) bA.classList.add('warning-score');
         }
 
-        // Team B logic
         bB.classList.remove('active-B', 'warning-score');
         if (i <= scoreB) {
             bB.classList.add('active-B');
@@ -251,28 +255,22 @@ function addRound() {
     document.getElementById("leA").blur();
     document.getElementById("leB").blur();
 
-    // Check for Burst
     if (scoreA > 23) alert(document.getElementById("teamAName").innerText + " het gebars!");
     if (scoreB > 23) alert(document.getElementById("teamBName").innerText + " het gebars!");
 }
 
-// RESET SPECIFIC TEAM (BURST)
 function resetTeam(t) {
     if (confirm(`Reset net Span ${t} se telling na 0?`)) {
         if (t === 'A') {
-            scoreA = 0;
-            penA = 0;
+            scoreA = 0; penA = 0;
             document.getElementById("penA").innerText = 0;
-            // Clear A's checkboxes
             document.querySelectorAll("#scoreTable tbody tr").forEach(row => {
                 const cb = row.children[1].querySelector("input");
                 if (cb) cb.checked = false;
             });
         } else {
-            scoreB = 0;
-            penB = 0;
+            scoreB = 0; penB = 0;
             document.getElementById("penB").innerText = 0;
-            // Clear B's checkboxes
             document.querySelectorAll("#scoreTable tbody tr").forEach(row => {
                 const cb = row.children[7].querySelector("input");
                 if (cb) cb.checked = false;
